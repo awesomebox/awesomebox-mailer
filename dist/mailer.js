@@ -25,7 +25,6 @@
           transport = 'SMTP';
         }
       }
-      console.log(transport, this.config);
       this.transport = nodemailer.createTransport(transport, this.config);
       if (this.template_root != null) {
         this.template_root = walkabout(this.template_root);

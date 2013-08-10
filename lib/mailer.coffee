@@ -13,8 +13,6 @@ class Mailer
     
     transport ?= 'SMTP' if @config.service?
     
-    console.log transport, @config
-    
     @transport = nodemailer.createTransport(transport, @config)
     @template_root = walkabout(@template_root) if @template_root?
   
