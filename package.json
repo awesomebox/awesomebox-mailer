@@ -1,0 +1,39 @@
+{
+  "name": "awesomebox-mailer",
+  "description": "Simple mailer using nodemailer, awesomebox, and juice",
+  "version": "0.0.1",
+  "homepage": "https://github.com/awesomebox/awesomebox-mailer",
+  "author": {
+    "name": "Matt Insler",
+    "email": "matt.insler@gmail.com",
+    "url": "http://www.mattinsler.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:awesomebox/awesomebox-mailer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/awesomebox/awesomebox-mailer/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/awesomebox/awesomebox-mailer/blob/master/LICENSE-MIT"
+    }
+  ],
+  "main": "dist/mailer.js",
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "dependencies": {
+    "awesomebox": "0.0.25",
+    "juice": "~0.4.0",
+    "nodemailer": "~0.5.2",
+    "async": "~0.2.9"
+  },
+  "devDependencies": {
+    "grunt": "~0.3.15",
+    "grunt-contrib": "~0.3.0"
+  },
+  "keywords": []
+}
