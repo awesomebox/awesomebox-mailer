@@ -1,7 +1,7 @@
 juice = require 'juice'
 async = require 'async'
+walkabout = require 'walkabout'
 nodemailer = require 'nodemailer'
-walkabout = require 'awesomebox/node_modules/walkabout'
 {RenderPipeline} = require('awesomebox').ViewPipeline
 
 class Mailer
