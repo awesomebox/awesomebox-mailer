@@ -5,9 +5,9 @@
 
   async = require('async');
 
-  nodemailer = require('nodemailer');
+  walkabout = require('walkabout');
 
-  walkabout = require('awesomebox/node_modules/walkabout');
+  nodemailer = require('nodemailer');
 
   RenderPipeline = require('awesomebox').ViewPipeline.RenderPipeline;
 
