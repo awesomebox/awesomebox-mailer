@@ -47,7 +47,7 @@ class Mailer
     pipeline.push(
       path: path
       data: data
-      content_type: 'txt'
+      content_type: 'text'
     )
   
   send: (opts, callback) ->

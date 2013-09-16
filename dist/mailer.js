@@ -77,7 +77,7 @@
       return pipeline.push({
         path: path,
         data: data,
-        content_type: 'txt'
+        content_type: 'text'
       });
     };
 
