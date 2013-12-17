@@ -1,15 +1,20 @@
 (function() {
-  var Mailer, RenderPipeline, async, juice, nodemailer, walkabout;
+  var Mailer, Renderer, async, helpers, juice, nodemailer, path, _ref;
+
+  path = require('path');
 
   juice = require('juice');
 
   async = require('async');
 
-  walkabout = require('walkabout');
-
   nodemailer = require('nodemailer');
 
-  RenderPipeline = require('awesomebox').ViewPipeline.RenderPipeline;
+  try {
+    _ref = require(path.join(process.cwd(), 'node_modules', 'awesomebox-core')), helpers = _ref.helpers, Renderer = _ref.Renderer;
+  } catch (err) {
+    console.log('\nYou must npm install awesomebox-core in order to use awesomebox-mailer\n');
+    throw err;
+  }
 
   Mailer = (function() {
 
@@ -27,62 +32,49 @@
       }
       this.transport = nodemailer.createTransport(transport, this.config);
       if (this.template_root != null) {
-        this.template_root = walkabout(this.template_root);
+        this.template_root = path.resolve(this.template_root);
+        this.renderer = new Renderer({
+          root: this.template_root
+        });
       }
     }
 
-    Mailer.prototype._render_html = function(path, data, callback) {
-      var pipeline;
-      pipeline = RenderPipeline.configure({
-        resolve_to: 'content',
-        path: {
-          content: this.template_root
+    Mailer.prototype._render_html = function(path, data, next) {
+      var file;
+      path = path.replace(/\.html$/, '') + '.html';
+      file = helpers.find_file(this.template_root, path);
+      if (file == null) {
+        return next();
+      }
+      return this.renderer.render(file, data).then(function(opts) {
+        if (opts.content == null) {
+          return next();
         }
-      }).publish_to(function(err, cmd) {
-        if (err != null) {
-          return callback(err);
-        }
-        if (cmd.content == null) {
-          return callback();
-        }
-        return juice.juiceContent(cmd.content, {
-          url: 'file://' + cmd.resolved.file.absolute_path
-        }, function(err, html) {
-          if (err != null) {
-            return callback(err);
-          }
-          return callback(null, html);
+        return q.ninvoke(juice, 'juiceContent', opts.content, {
+          url: 'file://' + file
+        }).then(function(html) {
+          return next(null, html);
         });
-      });
-      return pipeline.push({
-        path: path,
-        data: data,
-        content_type: 'html'
-      });
+      })["catch"](next);
     };
 
-    Mailer.prototype._render_text = function(path, data, callback) {
-      var pipeline;
-      pipeline = RenderPipeline.configure({
-        resolve_to: 'content',
-        path: {
-          content: this.template_root
+    Mailer.prototype._render_text = function(path, data, next) {
+      var file;
+      path = path.replace(/\.text$/, '') + '.text';
+      file = helpers.find_file(this.template_root, path);
+      if (file == null) {
+        return next();
+      }
+      return this.renderer.render(file, data).then(function(opts) {
+        if (opts.content == null) {
+          return next();
         }
-      }).publish_to(function(err, cmd) {
-        if (err != null) {
-          return callback(err);
-        }
-        return callback(null, cmd.content);
-      });
-      return pipeline.push({
-        path: path,
-        data: data,
-        content_type: 'text'
-      });
+        return next(null, opts.content);
+      })["catch"](next);
     };
 
     Mailer.prototype.send = function(opts, callback) {
-      var do_send, _ref,
+      var do_send, _ref1,
         _this = this;
       do_send = function() {
         if (opts.text == null) {
@@ -101,7 +93,7 @@
       if (opts.template == null) {
         return typeof callback === "function" ? callback(new Error('Must specify at least a template or html or text')) : void 0;
       }
-      if ((_ref = opts.data) == null) {
+      if ((_ref1 = opts.data) == null) {
         opts.data = {};
       }
       opts.template = '/' + opts.template.replace(/^\/+/, '');

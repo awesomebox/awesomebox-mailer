@@ -26,11 +26,9 @@
     "node": ">= 0.8.0"
   },
   "dependencies": {
-    "awesomebox": "0.0.27",
     "juice": "~0.4.0",
     "nodemailer": "~0.5.2",
-    "async": "~0.2.9",
-    "walkabout": "~0.1.6"
+    "async": "~0.2.9"
   },
   "devDependencies": {
     "grunt": "~0.3.15",

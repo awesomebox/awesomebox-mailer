@@ -1,8 +1,12 @@
+path = require 'path'
 juice = require 'juice'
 async = require 'async'
-walkabout = require 'walkabout'
 nodemailer = require 'nodemailer'
-{RenderPipeline} = require('awesomebox').ViewPipeline
+try
+  {helpers, Renderer} = require path.join(process.cwd(), 'node_modules', 'awesomebox-core')
+catch err
+  console.log '\nYou must npm install awesomebox-core in order to use awesomebox-mailer\n'
+  throw err
 
 class Mailer
   constructor: (@config = {}) ->
@@ -14,41 +18,34 @@ class Mailer
     transport ?= 'SMTP' if @config.service?
     
     @transport = nodemailer.createTransport(transport, @config)
-    @template_root = walkabout(@template_root) if @template_root?
+    if @template_root?
+      @template_root = path.resolve(@template_root)
+      @renderer = new Renderer(root: @template_root)
   
-  _render_html: (path, data, callback) ->
-    pipeline = RenderPipeline.configure(
-      resolve_to: 'content'
-      path:
-        content: @template_root
-    ).publish_to (err, cmd) ->
-      return callback(err) if err?
-      return callback() unless cmd.content?
-      
-      juice.juiceContent cmd.content, {url: 'file://' + cmd.resolved.file.absolute_path}, (err, html) ->
-        return callback(err) if err?
-        callback(null, html)
+  _render_html: (path, data, next) ->
+    path = path.replace(/\.html$/, '') + '.html'
+    file = helpers.find_file(@template_root, path)
+    return next() unless file?
     
-    pipeline.push(
-      path: path
-      data: data
-      content_type: 'html'
-    )
-  
-  _render_text: (path, data, callback) ->
-    pipeline = RenderPipeline.configure(
-      resolve_to: 'content'
-      path:
-        content: @template_root
-    ).publish_to (err, cmd) ->
-      return callback(err) if err?
-      callback(null, cmd.content)
+    @renderer.render(file, data)
+    .then (opts) ->
+      return next() unless opts.content?
       
-    pipeline.push(
-      path: path
-      data: data
-      content_type: 'text'
-    )
+      q.ninvoke(juice, 'juiceContent', opts.content, url: 'file://' + file)
+      .then (html) ->
+        next(null, html)
+    .catch(next)
+  
+  _render_text: (path, data, next) ->
+    path = path.replace(/\.text$/, '') + '.text'
+    file = helpers.find_file(@template_root, path)
+    return next() unless file?
+    
+    @renderer.render(file, data)
+    .then (opts) ->
+      return next() unless opts.content?
+      next(null, opts.content)
+    .catch(next)
   
   send: (opts, callback) ->
     do_send = =>
