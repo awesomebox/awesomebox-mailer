@@ -50,9 +50,12 @@
         if (opts.content == null) {
           return next();
         }
-        return q.ninvoke(juice, 'juiceContent', opts.content, {
+        return juice.juiceContent(opts.content, {
           url: 'file://' + file
-        }).then(function(html) {
+        }, function(err, html) {
+          if (err != null) {
+            return next(err);
+          }
           return next(null, html);
         });
       })["catch"](next);

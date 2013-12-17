@@ -31,8 +31,8 @@ class Mailer
     .then (opts) ->
       return next() unless opts.content?
       
-      q.ninvoke(juice, 'juiceContent', opts.content, url: 'file://' + file)
-      .then (html) ->
+      juice.juiceContent opts.content, {url: 'file://' + file}, (err, html) ->
+        return next(err) if err?
         next(null, html)
     .catch(next)
   
